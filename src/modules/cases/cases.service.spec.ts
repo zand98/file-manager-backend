@@ -39,7 +39,7 @@ describe('CasesService', () => {
   describe('create', () => {
     it('should create and save a case', async () => {
       const name = 'Test Case';
-      const caseEntity = { id: 1, name};
+      const caseEntity = { id: 1, name, collections: [] };
       // `create` returns the entity instance from the DTO/object
       mockRepository.create.mockReturnValue(caseEntity);
       // `save` returns the persisted entity (often with ID generated)
@@ -55,12 +55,13 @@ describe('CasesService', () => {
 
   describe('findAll', () => {
     it('should return an array of cases with relations', async () => {
-      const cases = [{ id: 1, name: 'Case 1'}];
+      const cases = [{ id: 1, name: 'Case 1', collections: [] }];
       mockRepository.find.mockResolvedValue(cases);
 
       const result = await service.findAll();
 
       expect(mockRepository.find).toHaveBeenCalledWith({
+        relations: ['collections', 'collections.files'],
         order: { updated_at: 'DESC' },
       });
       expect(result).toEqual(cases);
@@ -70,13 +71,14 @@ describe('CasesService', () => {
   describe('findOne', () => {
     it('should return a case if found', async () => {
       const id = 1;
-      const caseEntity = { id, name: 'Case 1'};
+      const caseEntity = { id, name: 'Case 1', collections: [] };
       mockRepository.findOne.mockResolvedValue(caseEntity);
 
       const result = await service.findOne(id);
 
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { id: id }, // TypeORM findOne options
+        relations: ['collections', 'collections.files'],
       });
       expect(result).toEqual(caseEntity);
     });

@@ -17,6 +17,7 @@ export class CasesService {
 
   async findAll(): Promise<CaseEntity[]> {
     return this.caseRepository.find({ 
+        relations: ['collections', 'collections.files'],
         order: { updated_at: 'DESC' }
     });
   }
@@ -24,11 +25,19 @@ export class CasesService {
   async findOne(id: number): Promise<CaseEntity> {
     const caseEntity = await this.caseRepository.findOne({
       where: { id } as any,
+      relations: ['collections', 'collections.files'],
     });
     if (!caseEntity) {
       throw new NotFoundException(`Case with ID ${id} not found`);
     }
-
+    // Sort collections by updated date desc
+    if (caseEntity.collections) {
+        caseEntity.collections.sort((a, b) => {
+            const dateA = new Date(a.updated_at || a.created_at).getTime();
+            const dateB = new Date(b.updated_at || b.created_at).getTime();
+            return dateB - dateA;
+        });
+    }
     return caseEntity;
   }
 }

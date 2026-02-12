@@ -8,6 +8,7 @@ import { ConfigService } from '../config/config.service';
 import { ConfigModule } from '../config/config.module';
 import { UserModule } from '../user/user.module';
 import { CasesModule } from '../cases/cases.module';
+import { CollectionsModule } from '../collections/collections.module';
 @Module({
   imports: [
     //  ServeStaticModule.forRoot({
@@ -41,6 +42,7 @@ import { CasesModule } from '../cases/cases.module';
     UserModule,
     AuthModule,
     CasesModule,
+    CollectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

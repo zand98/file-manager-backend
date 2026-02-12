@@ -2,13 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CasesController } from './cases.controller';
 import { CasesService } from './cases.service';
 import { CaseEntity } from './entities/case.entity';
+import { CollectionEntity } from '../collections/entities/collection.entity';
 import { CreateCaseDto } from './dtos/create-case.dto';
 
 describe('CasesController', () => {
     let controller: CasesController;
     let service: CasesService;
 
-    const mockCase: CaseEntity = { id: 1, name: 'Case 1', created_at: new Date(), updated_at: new Date(), deleted_at: null };
+    // Define mock data
+    const mockCase: CaseEntity = { id: 1, name: 'Case 1', created_at: new Date(), updated_at: new Date(), deleted_at: null, collections: [] };
 
     const mockService = {
         create: jest.fn(),
