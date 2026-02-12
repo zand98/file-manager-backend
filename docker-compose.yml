@@ -1,0 +1,25 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: file_manager
+    cap_add:
+      - SYS_NICE
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_DATABASE:-fileexplorer}
+      MYSQL_USER: ${DB_USERNAME:-fileexplorer}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-fileexplorer}
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge

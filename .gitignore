@@ -1,0 +1,13 @@
+/node_modules
+/files
+/logs
+/.env
+/files
+/dist
+/dist\tsconfig.build.tsbuildinfo
+/dist/modules
+/.vscode
+.vscode
+/build
+/public
+public*
