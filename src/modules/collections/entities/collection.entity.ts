@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseTimestampEntity } from '../../../shared/entities/BaseTimestamp.entity';
 import { CaseEntity } from '../../cases/entities/case.entity';
+import { FileEntity } from '../../files/entities/file.entity';
 
 @Entity('collections')
 export class CollectionEntity extends BaseTimestampEntity {
@@ -13,4 +14,6 @@ export class CollectionEntity extends BaseTimestampEntity {
   @ManyToOne(() => CaseEntity, (caseEntity) => caseEntity.collections)
   case: CaseEntity;
 
+  @OneToMany(() => FileEntity, (file) => file.collection)
+  files: FileEntity[];
 }

@@ -4,10 +4,12 @@ import { CollectionsService } from './collections.service';
 import { CollectionsController } from './collections.controller';
 import { CollectionEntity } from './entities/collection.entity';
 import { CaseEntity } from 'src/modules/cases/entities/case.entity';
+import { FilesModule } from '../files/files.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CollectionEntity, CaseEntity]),
+    forwardRef(() => FilesModule),
   ],
   controllers: [CollectionsController],
   providers: [CollectionsService],

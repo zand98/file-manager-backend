@@ -3,6 +3,7 @@ import { CollectionsService } from './collections.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CollectionEntity } from './entities/collection.entity';
 import { CaseEntity } from '../cases/entities/case.entity';
+import { FilesService } from '../files/files.service';
 import { NotFoundException } from '@nestjs/common';
 
 describe('CollectionsService', () => {
@@ -33,6 +34,12 @@ describe('CollectionsService', () => {
                 {
                     provide: getRepositoryToken(CaseEntity),
                     useValue: mockCaseRepository,
+                },
+                {
+                    provide: FilesService, // MOCKING THE FILES SERVICE
+                    useValue: {
+                        delete: jest.fn(),
+                    },
                 },
             ],
         }).compile();
