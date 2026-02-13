@@ -21,6 +21,12 @@ export class JwtUserStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  /**
+   * Checks if the bearer token is a valid token
+   * @param {any} jwtPayload validation method for jwt token
+   * @returns {Promise<object>} a object to be signed
+   */
+
   // jwt.strategy.ts
   async validate(payload: { sub: string; roles: string[] }) {
     return {

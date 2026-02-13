@@ -1,4 +1,4 @@
-import { RegisterPayload } from 'src/modules/auth/PayloadAuth/register.payload';
+import { RegisterPayload } from "src/modules/auth/PayloadAuth/register.payload";
 
 /**
  * Patch User Payload Class

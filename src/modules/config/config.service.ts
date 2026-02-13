@@ -43,7 +43,12 @@ export class ConfigService {
       DB_PORT: joi.number().default('3306'),
       DB_EXTERNAL_PORT: joi.number().optional(),
       DB_DATABASE: joi.string().default(''),
-    }).unknown(true);
+      MINIO_ENDPOINT: joi.string().optional(),
+      MINIO_PORT: joi.number().optional().default(9000),
+      MINIO_ACCESS_KEY: joi.string().optional(),
+      MINIO_SECRET_KEY: joi.string().optional(),
+      MINIO_BUCKET_NAME: joi.string().optional().default('file-explorer'),
+    });
 
     /**
      * Represents the status of validation check on the configuration file

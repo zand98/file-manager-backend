@@ -4,12 +4,14 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  NotAcceptableException,
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { PaginationPayload } from '../app/pagination.payload';
 import { PaginationResult } from '../app/paginationResult.interface';
+import { RegisterPayload } from '../auth/PayloadAuth/register.payload';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '../roles/entities/roles.entity';
 import { User } from '../user/entities/user.entity';

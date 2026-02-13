@@ -9,6 +9,8 @@ import { ConfigModule } from '../config/config.module';
 import { UserModule } from '../user/user.module';
 import { CasesModule } from '../cases/cases.module';
 import { CollectionsModule } from '../collections/collections.module';
+import { FilesModule } from '../files/files.module';
+import { MinioModule } from '../minio/minio.module';
 @Module({
   imports: [
     //  ServeStaticModule.forRoot({
@@ -30,9 +32,7 @@ import { CollectionsModule } from '../collections/collections.module';
           username: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_DATABASE'),
-          // entities: [Admin, category, Product, subcategory, country, currency, city, User, Role, chat],
           entities: [__dirname + './../**/**.entity{.ts,.js}'],
-          // synchronize: false,
           synchronize: configService.isEnv('dev'),
           keepConnectionAlive: true,
         } as TypeOrmModuleAsyncOptions;
@@ -43,6 +43,8 @@ import { CollectionsModule } from '../collections/collections.module';
     AuthModule,
     CasesModule,
     CollectionsModule,
+    FilesModule,
+    MinioModule,
   ],
   controllers: [AppController],
   providers: [AppService],

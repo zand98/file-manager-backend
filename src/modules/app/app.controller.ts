@@ -1,7 +1,6 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 
 /**
  * App Controller
@@ -14,4 +13,11 @@ export class AppController {
    * @param {AppService} appService app service
    */
   constructor(private readonly appService: AppService) {}
+
+  @Get('request/user')
+  @ApiResponse({ status: 200, description: 'User Metadata Request Completed' })
+  @ApiResponse({ status: 400, description: 'User Metadata Request Failed' })
+  getRequestUser(@Req() req): Partial<Request> {
+    return req.user;
+  }
 }

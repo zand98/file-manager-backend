@@ -19,6 +19,8 @@ import { User } from './entities/user.entity';
 import { PaginationPayload } from '../app/pagination.payload';
 import { PaginationResult } from '../app/paginationResult.interface';
 import { PatchUserPayload } from './dtos/patch.user.payload';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 /**
  * User Controller
  */
