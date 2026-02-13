@@ -1,4 +1,26 @@
 services:
+  app:
+    build: .
+    container_name: file_manager_app
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=${MINIO_PORT:-9000}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME:-file_manager}
+    depends_on:
+      - db
+      - minio
+    restart: unless-stopped
+    networks:
+      - app-network
+
   db:
     image: mysql:8.0
     container_name: file_manager
@@ -8,17 +30,34 @@ services:
       - "${DB_PORT:-3306}:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_DATABASE: ${DB_DATABASE:-fileexplorer}
-      MYSQL_USER: ${DB_USERNAME:-fileexplorer}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-fileexplorer}
+      MYSQL_DATABASE: ${DB_DATABASE:-file_manager}
+      MYSQL_USER: ${DB_USERNAME:-file_manager}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-file_manager}
     volumes:
       - db_data:/var/lib/mysql
     restart: unless-stopped
     networks:
       - app-network
 
+  minio:
+    image: minio/minio
+    container_name: file_manager_minio
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    networks:
+      - app-network
+
 volumes:
   db_data:
+  minio_data:
 
 networks:
   app-network:
