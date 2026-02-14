@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
-import { GetCasesDto } from './dtos/get-cases.dto';
 import { PaginationResult } from '../app/paginationResult.interface';
 import { CaseEntity } from './entities/case.entity';
+import { PaginationPayload } from '../app/pagination.payload';
 
 @Injectable()
 export class CasesService {
@@ -17,8 +17,16 @@ export class CasesService {
     return this.caseRepository.save(newCase);
   }
 
-  async findAll(query$: GetCasesDto): Promise<PaginationResult> {
-    const { page = 1, limit = 10, search, sortBy, orderBy } = query$;
+  async findAll(
+    paginationPayload: PaginationPayload,
+    search?: string,
+    sortBy?: string,
+    orderBy?: 'ASC' | 'DESC',
+  ): Promise<PaginationResult> {
+    let { page = 1, limit = 10 } = paginationPayload;
+    
+    if (page < 1) page = 1;
+    
     const skip = (page - 1) * limit;
 
     const where: any = {};

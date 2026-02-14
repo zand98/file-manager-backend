@@ -21,6 +21,7 @@ import { User } from './entities/user.entity';
 import { PaginationPayload } from '../app/pagination.payload';
 import { PaginationResult } from '../app/paginationResult.interface';
 import { PatchUserPayload } from './dtos/patch.user.payload';
+import { VALID_USER_FIELDS, ORDER_BY } from '../../shared/constants';
 /**
  * User Controller
  */
@@ -35,43 +36,38 @@ export class UserController {
   }
 
   @Get('')
+  @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   @ApiResponse({ status: 400, description: 'Fetch Users Request Failed' })
-  @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({ name: 'sortBy', required: false, type: String })
-  @ApiQuery({ name: 'orderBy', required: false, enum: ['ASC', 'DESC'] })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search by user name or phone number',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: VALID_USER_FIELDS,
+  })
+  @ApiQuery({
+    name: 'orderBy',
+    required: false,
+    enum: ORDER_BY,
+  })
   async getUsers(
     @Query() paginationPayload: PaginationPayload,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
-    @Query('orderBy') orderBy?: string,
+    @Query('orderBy') orderBy?: 'ASC' | 'DESC',
   ): Promise<PaginationResult> {
     this.i++;
     console.log('Request number =>', this.i);
-    const order = {};
-    let Users;
-    if (!paginationPayload.limit || !paginationPayload.page) {
-      paginationPayload = {
-        limit: 100,
-        page: 1,
-      };
-    }
-    if (sortBy && orderBy) {
-      order[sortBy] = orderBy;
-    }
-    if (!sortBy || !orderBy) {
-      order['user.id'] = 'ASC';
-    }
 
-    Users = await this.userService.getAll(
+    return await this.userService.getAll(
       paginationPayload,
-      order,
-      search ? search : undefined,
+      search,
+      sortBy,
+      orderBy,
     );
-
-    if (!Users) {
-      throw new BadRequestException('No Users were found.');
-    }
-    return Users;
   }
   /**
    * Retrieves a particular User

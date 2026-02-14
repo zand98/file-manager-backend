@@ -33,19 +33,30 @@ export class UserService {
 
   async getAll(
     paginationPayload: PaginationPayload,
-    order?: any,
     search?: string,
+    sortBy?: string,
+    orderBy?: 'ASC' | 'DESC',
   ): Promise<PaginationResult> {
-    const skippedItems = (paginationPayload.page - 1) * paginationPayload.limit;
+    let { page = 1, limit = 10 } = paginationPayload;
+    if (page < 1) page = 1;
+
+    const skippedItems = (page - 1) * limit;
 
     const query = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.roles', 'roles')
       .skip(skippedItems)
-      .take(paginationPayload.limit);
+      .take(limit);
 
-    if (order) {
-      query.orderBy(order);
+    if (sortBy && orderBy) {
+      if (sortBy === 'roles') {
+        // Handle sorting by role if needed, or simple ignore complexity for now
+        // Usually sorting by join column requires logic like roles.name
+      } else {
+        query.orderBy(`user.${sortBy}`, orderBy);
+      }
+    } else {
+      query.orderBy('user.id', 'ASC');
     }
 
     if (search) {
@@ -58,8 +69,8 @@ export class UserService {
 
     return {
       data: data,
-      limit: paginationPayload.limit,
-      page: paginationPayload.page,
+      limit: limit,
+      page: page,
       totalCount,
     };
   }

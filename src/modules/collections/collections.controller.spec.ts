@@ -68,9 +68,15 @@ describe('CollectionsController', () => {
     describe('findAll', () => {
         it('should list by case', async () => {
             const list = [];
-            service.findAllByCase.mockResolvedValue(list);
-            expect(await controller.findAll(1)).toEqual(list);
-            expect(service.findAllByCase).toHaveBeenCalledWith(1);
+            const paginationResult = {
+                data: list,
+                page: 1,
+                limit: 10,
+                totalCount: 0,
+            };
+            service.findAllByCase.mockResolvedValue(paginationResult);
+            expect(await controller.findAll(1, { page: 1, limit: 10 }, undefined, undefined, undefined)).toEqual(paginationResult);
+            expect(service.findAllByCase).toHaveBeenCalledWith(1, { page: 1, limit: 10 }, undefined, undefined, undefined);
         });
     });
 });

@@ -61,7 +61,7 @@ describe('CasesController', () => {
                 totalCount: 1,
             };
             mockService.findAll.mockResolvedValue(paginationResult);
-            expect(await controller.findAll({ page: 1, limit: 10 })).toEqual(paginationResult);
+            expect(await controller.findAll({ page: 1, limit: 10 }, undefined, undefined, undefined)).toEqual(paginationResult);
         });
     });
 

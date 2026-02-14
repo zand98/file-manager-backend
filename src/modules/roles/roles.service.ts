@@ -4,10 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { Role } from './entities/roles.entity';
 import { RoleDto } from './dtos/role.dto';
 import { PatchRolePayload } from './dtos/patchRole.dto';
+import { PaginationPayload } from '../app/pagination.payload';
+import { PaginationResult } from '../app/paginationResult.interface';
 
 @Injectable()
 export class RolesService {
@@ -16,8 +18,42 @@ export class RolesService {
     private readonly rolesRepository: Repository<Role>,
   ) {}
 
-  async findAll(): Promise<Role[]> {
-    return await this.rolesRepository.find();
+  async findAll(
+    paginationPayload: PaginationPayload,
+    search?: string,
+    sortBy?: string,
+    orderBy?: 'ASC' | 'DESC',
+  ): Promise<PaginationResult> {
+    let { page = 1, limit = 10 } = paginationPayload;
+    if (page < 1) page = 1;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (search) {
+      where.name = Like(`%${search}%`);
+    }
+
+    const order: any = {};
+    if (sortBy) {
+        order[sortBy] = orderBy || 'DESC';
+    } else {
+        order.id = 'ASC';
+    }
+
+    const [data, totalCount] = await this.rolesRepository.findAndCount({
+      where,
+      order,
+      skip,
+      take: limit,
+    });
+
+    return {
+      data,
+      page,
+      limit,
+      totalCount,
+    };
   }
 
   async findOne(id: number): Promise<Role> {

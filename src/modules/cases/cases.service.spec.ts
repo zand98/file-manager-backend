@@ -59,8 +59,8 @@ describe('CasesService', () => {
       const cases = [{ id: 1, name: 'Case 1', collections: [] }];
       mockRepository.findAndCount.mockResolvedValue([cases, 1]);
 
-      const query = { page: 1, limit: 10 };
-      const result = await service.findAll(query);
+      const pagination = { page: 1, limit: 10 };
+      const result = await service.findAll(pagination);
 
       expect(mockRepository.findAndCount).toHaveBeenCalledWith({
         where: {},
@@ -76,8 +76,8 @@ describe('CasesService', () => {
         const cases = [{ id: 1, name: 'Case 1', collections: [] }];
         mockRepository.findAndCount.mockResolvedValue([cases, 1]);
   
-        const query = { page: 1, limit: 10, sortBy: 'name', orderBy: 'ASC' as const };
-        const result = await service.findAll(query);
+        const pagination = { page: 1, limit: 10 };
+        const result = await service.findAll(pagination, undefined, 'name', 'ASC');
   
         expect(mockRepository.findAndCount).toHaveBeenCalledWith({
           where: {},

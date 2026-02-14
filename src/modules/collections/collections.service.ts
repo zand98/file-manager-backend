@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CollectionEntity } from './entities/collection.entity';
 import { CaseEntity } from 'src/modules/cases/entities/case.entity';
 import { FilesService } from '../files/files.service';
+import { PaginationPayload } from '../app/pagination.payload';
+import { PaginationResult } from '../app/paginationResult.interface';
 
 @Injectable()
 export class CollectionsService {
@@ -45,12 +47,44 @@ export class CollectionsService {
     return col;
   }
 
-  async findAllByCase(caseId: number): Promise<CollectionEntity[]> {
-    return this.collectionRepository.find({
-      where: { case: { id: caseId } } as any,
+  async findAllByCase(
+    caseId: number,
+    paginationPayload: PaginationPayload,
+    search?: string,
+    sortBy?: string,
+    orderBy?: 'ASC' | 'DESC',
+  ): Promise<PaginationResult> {
+    let { page = 1, limit = 10 } = paginationPayload;
+    if (page < 1) page = 1;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = { case: { id: caseId } };
+    if (search) {
+      where.name = Like(`%${search}%`);
+    }
+
+    const order: any = {};
+    if (sortBy) {
+        order[sortBy] = orderBy || 'DESC';
+    } else {
+        order.updated_at = 'DESC';
+    }
+
+    const [data, totalCount] = await this.collectionRepository.findAndCount({
+      where,
       relations: ['files'],
-      order: { updated_at: 'DESC' },
+      order,
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      page,
+      limit,
+      totalCount,
+    };
   }
 
   async delete(id: number): Promise<void> {

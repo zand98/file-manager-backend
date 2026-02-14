@@ -17,6 +17,7 @@ describe('CollectionsService', () => {
             save: jest.fn(),
             findOne: jest.fn(),
             find: jest.fn(),
+            findAndCount: jest.fn(),
             delete: jest.fn(),
         };
 
@@ -93,16 +94,25 @@ describe('CollectionsService', () => {
         it('should return collections for a case', async () => {
             const caseId = 1;
             const list = [{ id: 1, name: 'Col 1' }];
-            mockCollectionRepository.find.mockResolvedValue(list);
+            const paginationPayload = { page: 1, limit: 10 };
 
-            const result = await service.findAllByCase(caseId);
+            mockCollectionRepository.findAndCount.mockResolvedValue([list, 1]);
+
+            const result = await service.findAllByCase(caseId, paginationPayload);
             
-            expect(mockCollectionRepository.find).toHaveBeenCalledWith({
+            expect(mockCollectionRepository.findAndCount).toHaveBeenCalledWith({
                 where: { case: { id: caseId } },
                 relations: ['files'],
                 order: { updated_at: 'DESC' },
+                skip: 0,
+                take: 10,
             });
-            expect(result).toEqual(list);
+            expect(result).toEqual({
+                data: list,
+                page: 1,
+                limit: 10,
+                totalCount: 1,
+            });
         });
     });
 

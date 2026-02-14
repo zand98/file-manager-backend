@@ -7,12 +7,16 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
 import { Role } from './entities/roles.entity';
 import { RoleDto } from './dtos/role.dto';
 import { PatchRolePayload } from './dtos/patchRole.dto';
+import { VALID_ROLE_FIELDS, ORDER_BY } from '../../shared/constants';
+import { PaginationPayload } from '../app/pagination.payload';
+import { PaginationResult } from '../app/paginationResult.interface';
 
 @ApiBearerAuth()
 @ApiTags('roles')
@@ -21,9 +25,34 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Get()
-  @ApiResponse({ status: 200, description: 'List all roles' })
-  async getRoles(): Promise<Role[]> {
-    return await this.rolesService.findAll();
+  @ApiResponse({ status: 200, description: 'Roles retrieved successfully' })
+  @ApiQuery({
+      name: 'search',
+      required: false,
+      description: 'Search by role name',
+  })
+  @ApiQuery({
+      name: 'sortBy',
+      required: false,
+      enum: VALID_ROLE_FIELDS,
+  })
+  @ApiQuery({
+      name: 'orderBy',
+      required: false,
+      enum: ORDER_BY,
+  })
+  async getRoles(
+      @Query() paginationPayload: PaginationPayload,
+      @Query('search') search?: string,
+      @Query('sortBy') sortBy?: string,
+      @Query('orderBy') orderBy?: 'ASC' | 'DESC',
+  ): Promise<PaginationResult> {
+    return await this.rolesService.findAll(
+        paginationPayload, 
+        search, 
+        sortBy, 
+        orderBy
+    );
   }
 
   @Get(':id')
