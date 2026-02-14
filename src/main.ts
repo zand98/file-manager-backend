@@ -50,9 +50,14 @@ async function bootstrap() {
   app.use(
     rateLimit({
       windowMs: 60 * 1000, // 1 minutes
-      max: 1000, // limit each IP to 1000 requests per minute
+      max: 100, // limit each IP to 1000 requests per minute
       standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
       legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+      skip: (req) => {
+        // Skip rate limiting for file upload part URL requests
+        // These are high-volume requests during large file uploads (one per ~5MB chunk)
+        return req.originalUrl.includes('/part-url') && req.method === 'GET';
+      },
       message: {
         statusCode: 429,
         message: 'Too many requests, please try again later.',

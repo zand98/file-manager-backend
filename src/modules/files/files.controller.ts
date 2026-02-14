@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query, ParseIntPipe, ParseUUIDPipe, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, Query, ParseIntPipe, ParseUUIDPipe, BadRequestException } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { CollectionsService } from 'src/modules/collections/collections.service';
 import { InitUploadDto } from './dtos/init-upload.dto';
@@ -72,5 +72,10 @@ export class FilesController {
   @ApiOperation({ summary: 'Get download URL for a file' })
   async download(@Param('fileId', ParseUUIDPipe) fileId: string) {
     return this.filesService.getDownloadUrl(fileId);
+  }
+  @Delete('files/:fileId')
+  @ApiOperation({ summary: 'Delete a file' })
+  async delete(@Param('fileId', ParseUUIDPipe) fileId: string) {
+    return this.filesService.delete(fileId);
   }
 }
