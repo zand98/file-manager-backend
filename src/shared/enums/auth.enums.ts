@@ -1,0 +1,18 @@
+
+export enum RedisActions {
+  REGISTER = 'REGISTER',
+  FORGET_PASSWORD = 'FORGET_PASSWORD',
+}
+
+export enum OtpResponseCodes {
+  USER_REGISTERED = 'USER_REGISTERED',
+  OTP_VERIFIED = 'OTP_VERIFIED',
+  OTP_SENT = 'OTP_SENT',
+  PASSWORD_CHANGED = 'PASSWORD_CHANGED',
+  PASSWORD_PENDING_OTP = 'PASSWORD_PENDING_OTP',
+}
+
+export enum TokenType {
+  AT = 'AT',
+  RT = 'RT',
+}

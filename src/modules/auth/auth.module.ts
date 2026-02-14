@@ -11,6 +11,9 @@ import { UserModule } from '../user/user.module';
 import { RolesExistValidator } from '../validators/roles-exist.validator';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Role } from '../roles/entities/roles.entity';
+import { User } from '../user/entities/user.entity';
+import { RedisModule } from '../redis/redis.module';
+import { SharedModule } from '../../shared/shared.module';
 
 @Module({
   imports: [
@@ -29,7 +32,9 @@ import { Role } from '../roles/entities/roles.entity';
     ConfigModule,
     UserModule,
     RolesModule,
-    TypeOrmModule.forFeature([Role]), // This provides the Role repository
+    RedisModule,
+    SharedModule,
+    TypeOrmModule.forFeature([Role, User]), // Needed for direct access if required, but aiming for Service usage
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtUserStrategy, RolesExistValidator],

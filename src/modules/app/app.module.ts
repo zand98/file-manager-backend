@@ -11,6 +11,9 @@ import { CasesModule } from '../cases/cases.module';
 import { CollectionsModule } from '../collections/collections.module';
 import { FilesModule } from '../files/files.module';
 import { MinioModule } from '../minio/minio.module';
+import { SharedModule } from '../../shared/shared.module';
+import { RedisModule } from '../redis/redis.module';
+
 @Module({
   imports: [
     //  ServeStaticModule.forRoot({
@@ -45,6 +48,8 @@ import { MinioModule } from '../minio/minio.module';
     CollectionsModule,
     FilesModule,
     MinioModule,
+    SharedModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

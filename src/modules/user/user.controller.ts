@@ -12,6 +12,8 @@ import {
   ApiBearerAuth,
   ApiResponse,
   ApiTags,
+  ApiQuery,
+  ApiParam,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 // import { PatchUserPayload } from './dtos/patch.user.payload';
@@ -19,8 +21,6 @@ import { User } from './entities/user.entity';
 import { PaginationPayload } from '../app/pagination.payload';
 import { PaginationResult } from '../app/paginationResult.interface';
 import { PatchUserPayload } from './dtos/patch.user.payload';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
 /**
  * User Controller
  */
@@ -35,9 +35,10 @@ export class UserController {
   }
 
   @Get('')
-  // @UseGuards(AuthGuard('jwt'), RolesGuard)
-  // @Roles('admin', 'manager') // Simple role check
   @ApiResponse({ status: 400, description: 'Fetch Users Request Failed' })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'orderBy', required: false, enum: ['ASC', 'DESC'] })
   async getUsers(
     @Query() paginationPayload: PaginationPayload,
     @Query('search') search?: string,
@@ -74,7 +75,7 @@ export class UserController {
   }
   /**
    * Retrieves a particular User
-   * @param Username the User given Username to fetch
+   * @param userToken the User given userToken to fetch
    * @returns {Promise<User>} queried User data
    */
 
@@ -85,7 +86,8 @@ export class UserController {
     description: 'Fetch User Request Received',
   })
   @ApiResponse({ status: 400, description: 'Fetch User Request Failed' })
-  async getByUserToken(@Param('userToken') userToken: any): Promise<User> {
+  @ApiParam({ name: 'userToken', required: true, description: 'User Token' })
+  async getByUserToken(@Param('userToken') userToken: string): Promise<User> {
     const relations = [];
     const user = await this.userService.getByUserToken(userToken, relations);
 
@@ -100,6 +102,7 @@ export class UserController {
   @Patch('token/:userToken')
   @ApiResponse({ status: 200, description: 'Patch User Request Received' })
   @ApiResponse({ status: 400, description: 'Patch User Request Failed' })
+  @ApiParam({ name: 'userToken', required: true })
   async patchUser(
     @Body() payload: PatchUserPayload,
     @Param('userToken') userToken: string,
@@ -108,6 +111,7 @@ export class UserController {
   }
 
   @Patch('phoneNumber/:phoneNumber')
+  @ApiParam({ name: 'phoneNumber', required: true })
   async patchUserByphoneNumber(
     @Body() payload: PatchUserPayload,
     @Param('phoneNumber') phoneNumber: string,

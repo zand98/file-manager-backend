@@ -1,6 +1,10 @@
-import { RegisterPayload } from "src/modules/auth/PayloadAuth/register.payload";
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { RegisterPayload } from '../../auth/PayloadAuth/register.payload';
 
-/**
- * Patch User Payload Class
- */
-export type PatchUserPayload = Partial<RegisterPayload>;
+export class PatchUserPayload extends PartialType(RegisterPayload) {
+  @ApiProperty({ required: false })
+  id?: number;
+
+  @ApiProperty({ required: false })
+  disabled?: boolean;
+}

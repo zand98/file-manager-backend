@@ -6,6 +6,7 @@ import {
   Injectable,
   NotAcceptableException,
   forwardRef,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -101,10 +102,17 @@ export class UserService {
     disabled?: boolean;
     roles: Role[]; // Now accepts Role[] directly
   }): Promise<User> {
-    const newUser = this.userRepository.create(userData);
-    const savedUser = await this.userRepository.save(newUser);
-
-    return savedUser;
+    try {
+      const newUser = this.userRepository.create(userData);
+      const savedUser = await this.userRepository.save(newUser);
+      return savedUser;
+    } catch (error) {
+       // Check for duplicate entry error (MySQL error code 1062)
+       if (error.code === 'ER_DUP_ENTRY' || error.errno === 1062 || error.message?.includes('Duplicate entry')) {
+        throw new ConflictException('User with this phone number already exists (including potentially deleted users).');
+      }
+      throw new BadRequestException(error.message);
+    }
   }
 
   async updateUserPassword(userId: number, newPassword: string): Promise<User> {
@@ -128,7 +136,7 @@ export class UserService {
   }
 
   async editByToken(token: string, payload: PatchUserPayload): Promise<User> {
-    const user = await this.getByUserToken(token, ['roles', 'cities']);
+    const user = await this.getByUserToken(token, ['roles']);
     delete user?.password;
     if (!user) {
       throw new BadRequestException('User is not found');
@@ -151,6 +159,9 @@ export class UserService {
       const updatedUser = await this.userRepository.save(user);
       return updatedUser;
     } catch (error) {
+       if (error.code === 'ER_DUP_ENTRY' || error.errno === 1062 || error.message?.includes('Duplicate entry')) {
+        throw new ConflictException('This phone number is already taken.');
+      }
       throw new BadRequestException(error.message);
     }
   }
@@ -159,7 +170,7 @@ export class UserService {
     phoneNumber: string,
     payload: PatchUserPayload,
   ): Promise<User> {
-    const user = await this.getByPhoneNumber(phoneNumber, ['']);
+    const user = await this.getByPhoneNumber(phoneNumber);
     if (!user) {
       throw new BadRequestException('User is not found');
     }
@@ -180,6 +191,9 @@ export class UserService {
       const updatedUser = await this.userRepository.save(user);
       return updatedUser;
     } catch (error) {
+       if (error.code === 'ER_DUP_ENTRY' || error.errno === 1062 || error.message?.includes('Duplicate entry')) {
+        throw new ConflictException('This phone number is already taken.');
+      }
       throw new BadRequestException(error.message);
     }
   }
@@ -209,5 +223,9 @@ export class UserService {
 
   async validatePassword(user: User, password: string): Promise<boolean> {
     return bcrypt.compare(password, user.password);
+  }
+
+  async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
+    await this.userRepository.update(userId, { refreshToken });
   }
 }

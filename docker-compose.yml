@@ -1,25 +1,4 @@
 services:
-  app:
-    build: .
-    container_name: file_manager_app
-    ports:
-      - "${PORT:-3000}:${PORT:-3000}"
-    env_file:
-      - .env
-    environment:
-      - DB_HOST=db
-      - DB_PORT=3306
-      - MINIO_ENDPOINT=minio
-      - MINIO_PORT=${MINIO_PORT:-9000}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
-      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME:-file_manager}
-    depends_on:
-      - db
-      - minio
-    restart: unless-stopped
-    networks:
-      - app-network
 
   db:
     image: mysql:8.0
@@ -55,9 +34,39 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:alpine
+    container_name: file_manager_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: file_manager_redis_commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
 volumes:
   db_data:
   minio_data:
+  redis_data:
 
 networks:
   app-network:

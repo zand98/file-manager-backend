@@ -48,6 +48,14 @@ export class ConfigService {
       MINIO_ACCESS_KEY: joi.string().optional(),
       MINIO_SECRET_KEY: joi.string().optional(),
       MINIO_BUCKET_NAME: joi.string().optional().default('file-explorer'),
+      // New Auth/Redis variables
+      ACCESS_TOKEN_SECRET_KEY: joi.string().optional(), // Make optional or required based on strictness
+      ACCESS_TOKEN_EXPIRATION_TIME: joi.string().optional().default('15m'),
+      REFRESH_TOKEN_SECRET_KEY: joi.string().optional(),
+      REFRESH_TOKEN_EXPIRATION_TIME: joi.string().optional().default('7d'),
+      REDIS_HOST: joi.string().default('127.0.0.1'),
+      REDIS_PORT: joi.number().default(6379),
+      OTP_DISABLE: joi.string().valid('true', 'false').default('false'),
     });
 
     /**

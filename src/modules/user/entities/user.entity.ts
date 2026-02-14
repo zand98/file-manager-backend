@@ -48,6 +48,10 @@ export class User extends BaseTimestampEntity {
   @Exclude() // This will exclude password from serialization
   password: string;
 
+  @Column({ nullable: true })
+  @Exclude() // Exclude by default, but service can access it
+  refreshToken: string;
+
   @Column({ default: false })
   disabled: boolean;
 }
