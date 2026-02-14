@@ -57,7 +57,7 @@ export class FilesService {
     return results;
   }
 
-  async getPresignedPartUrl(fileId: number, partNumber: number) {
+  async getPresignedPartUrl(fileId: string, partNumber: number) {
     const file = await this.fileRepository.findOne({ where: { id: fileId } as any });
     if (!file) throw new NotFoundException('File not found');
     if (!file.upload_id) throw new BadRequestException('File is not in uploading state (missing uploadId)');
@@ -67,7 +67,7 @@ export class FilesService {
     return { url };
   }
 
-  async completeUpload(fileId: number, parts: { ETag: string; PartNumber: number }[]) {
+  async completeUpload(fileId: string, parts: { ETag: string; PartNumber: number }[]) {
     const file = await this.fileRepository.findOne({ where: { id: fileId } as any });
     if (!file) throw new NotFoundException('File not found');
 
@@ -87,7 +87,7 @@ export class FilesService {
     return updatedFile;
   }
 
-  async getDownloadUrl(fileId: number) {
+  async getDownloadUrl(fileId: string) {
     const file = await this.fileRepository.findOne({ where: { id: fileId } as any });
     if (!file) throw new NotFoundException('File not found');
 
@@ -95,7 +95,7 @@ export class FilesService {
     return { url };
   }
 
-  async delete(fileId: number) {
+  async delete(fileId: string) {
     const file = await this.fileRepository.findOne({ where: { id: fileId } as any });
     if (!file) return;
 

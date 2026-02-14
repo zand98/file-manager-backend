@@ -11,8 +11,8 @@ export enum FileStatus {
 
 @Entity('files')
 export class FileEntity extends BaseTimestampEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   original_name: string;

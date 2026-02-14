@@ -87,7 +87,7 @@ describe('FilesController', () => {
     describe('getPartUrl', () => {
         it('should call service', async () => {
             filesService.getPresignedPartUrl.mockResolvedValue({ url: 'url' });
-            expect(await controller.getPartUrl(1, 1)).toEqual({ url: 'url' });
+            expect(await controller.getPartUrl('uuid-123', 1)).toEqual({ url: 'url' });
         });
     });
     
@@ -95,17 +95,18 @@ describe('FilesController', () => {
     describe('completeUpload', () => {
         it('should call service', async () => {
             const parts = [];
+            const fileId = 'uuid-123';
             filesService.completeUpload.mockResolvedValue({});
-            await controller.completeUpload(1, { parts });
-            expect(filesService.completeUpload).toHaveBeenCalledWith(1, parts);
+            await controller.completeUpload(fileId, { parts });
+            expect(filesService.completeUpload).toHaveBeenCalledWith(fileId, parts);
         });
     });
 
     describe('download', () => {
         it('should call service', async () => {
             filesService.getDownloadUrl.mockResolvedValue({ url: 'durl' });
-            await controller.download(1);
-            expect(filesService.getDownloadUrl).toHaveBeenCalledWith(1);
+            await controller.download('uuid-123');
+            expect(filesService.getDownloadUrl).toHaveBeenCalledWith('uuid-123');
         });
     });
 });

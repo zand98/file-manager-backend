@@ -61,8 +61,8 @@ describe('FilesService', () => {
       mockMinioService.initMultipartUpload.mockResolvedValue({ UploadId: uploadId });
       
       // Mock the create and save flow
-      mockFileRepository.create.mockImplementation((dto) => ({ ...dto, id: Math.random() }));
-      mockFileRepository.save.mockImplementation((entity) => Promise.resolve({ ...entity, id: entity.id || 1 }));
+      mockFileRepository.create.mockImplementation((dto) => ({ ...dto, id: 'uuid-' + Math.random() }));
+      mockFileRepository.save.mockImplementation((entity) => Promise.resolve({ ...entity, id: entity.id || 'uuid-1' }));
 
       const result = await service.initUpload(collectionId, filesData);
 
@@ -85,7 +85,7 @@ describe('FilesService', () => {
       const collectionId = 1;
       const filesData = [{ originalName: 'fail.txt', size: 100, mimeType: 'text/plain' }];
       
-      const fileEntity = { id: 101, original_name: 'fail.txt' };
+      const fileEntity = { id: 'uuid-101', original_name: 'fail.txt' };
 
       mockFileRepository.create.mockReturnValue(fileEntity);
       mockFileRepository.save.mockResolvedValue(fileEntity); // First save success
@@ -96,15 +96,15 @@ describe('FilesService', () => {
         .rejects.toThrow(BadRequestException);
       
       // Crucial: check if cleanup happened
-      expect(mockFileRepository.delete).toHaveBeenCalledWith(101);
+      expect(mockFileRepository.delete).toHaveBeenCalledWith('uuid-101');
     });
   });
 
   describe('getPresignedPartUrl', () => {
     it('should return a url', async () => {
-      const fileId = 1;
+      const fileId = 'uuid-1';
       const partNumber = 1;
-      const file = { id: 1, s3_key: 'key', upload_id: 'upId', status: 'uploading' };
+      const file = { id: 'uuid-1', s3_key: 'key', upload_id: 'upId', status: 'uploading' };
       
       mockFileRepository.findOne.mockResolvedValue(file);
       mockMinioService.getPresignedPartUrl.mockResolvedValue('http://s3/url');
@@ -117,19 +117,19 @@ describe('FilesService', () => {
 
     it('should throw NotFound if file missing', async () => {
       mockFileRepository.findOne.mockResolvedValue(null);
-      await expect(service.getPresignedPartUrl(1, 1)).rejects.toThrow(NotFoundException);
+      await expect(service.getPresignedPartUrl('uuid-1', 1)).rejects.toThrow(NotFoundException);
     });
   });
 
   // Additional coverage for completeUpload
   describe('completeUpload', () => {
     it('should complete and update status', async () => {
-       const file = { id: 1, s3_key: 'k', upload_id: 'u', status: 'uploading' };
+       const file = { id: 'uuid-1', s3_key: 'k', upload_id: 'u', status: 'uploading' };
        mockFileRepository.findOne.mockResolvedValue(file);
        mockMinioService.completeMultipartUpload.mockResolvedValue({});
        mockFileRepository.save.mockImplementation(f => f);
 
-       const result = await service.completeUpload(1, []);
+       const result = await service.completeUpload('uuid-1', []);
        expect(result.status).toBe('completed');
        expect(mockMinioService.completeMultipartUpload).toHaveBeenCalled();
     });
@@ -137,10 +137,10 @@ describe('FilesService', () => {
 
   describe('getDownloadUrl', () => {
       it('should return url', async () => {
-          const file = { id: 1, s3_key: 'k' };
+          const file = { id: 'uuid-1', s3_key: 'k' };
           mockFileRepository.findOne.mockResolvedValue(file);
           mockMinioService.getPresignedDownloadUrl.mockResolvedValue('url');
-          expect(await service.getDownloadUrl(1)).toEqual({ url: 'url' });
+          expect(await service.getDownloadUrl('uuid-1')).toEqual({ url: 'url' });
       });
   });
 });

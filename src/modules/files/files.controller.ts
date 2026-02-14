@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query, ParseIntPipe, ParseUUIDPipe, BadRequestException } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { CollectionsService } from 'src/modules/collections/collections.service';
 import { InitUploadDto } from './dtos/init-upload.dto';
@@ -51,7 +51,7 @@ export class FilesController {
   @Get('files/:fileId/part-url')
   @ApiOperation({ summary: 'Get presigned URL for a specific part' })
   async getPartUrl(
-    @Param('fileId', ParseIntPipe) fileId: number,
+    @Param('fileId', ParseUUIDPipe) fileId: string,
     @Query('partNumber', ParseIntPipe) partNumber: number,
   ) {
     return this.filesService.getPresignedPartUrl(fileId, partNumber);
@@ -62,7 +62,7 @@ export class FilesController {
   @Post('files/:fileId/complete')
   @ApiOperation({ summary: 'Complete a multipart upload' })
   async completeUpload(
-    @Param('fileId', ParseIntPipe) fileId: number,
+    @Param('fileId', ParseUUIDPipe) fileId: string,
     @Body() body: CompleteUploadDto, // Using DTO for validation
   ) {
     return this.filesService.completeUpload(fileId, body.parts);
@@ -70,7 +70,7 @@ export class FilesController {
 
   @Get('files/:fileId/download')
   @ApiOperation({ summary: 'Get download URL for a file' })
-  async download(@Param('fileId', ParseIntPipe) fileId: number) {
+  async download(@Param('fileId', ParseUUIDPipe) fileId: string) {
     return this.filesService.getDownloadUrl(fileId);
   }
 }
