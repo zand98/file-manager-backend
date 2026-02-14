@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { CasesService } from './cases.service';
 import { CreateCaseDto } from './dtos/create-case.dto';
+import { GetCasesDto } from './dtos/get-cases.dto';
+import { PaginationResult } from '../app/paginationResult.interface';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Cases')
@@ -17,8 +19,8 @@ export class CasesController {
 
   @Get()
   @ApiOperation({ summary: 'List all cases' })
-  findAll() {
-    return this.casesService.findAll();
+  findAll(@Query() query: GetCasesDto): Promise<PaginationResult> {
+    return this.casesService.findAll(query);
   }
 
   @Get(':id')

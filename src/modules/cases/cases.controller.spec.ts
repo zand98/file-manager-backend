@@ -52,10 +52,16 @@ describe('CasesController', () => {
     });
 
     describe('findAll', () => {
-        it('should return an array of cases', async () => {
+        it('should return a paginated result of cases', async () => {
             const arr = [mockCase];
-            mockService.findAll.mockResolvedValue(arr);
-            expect(await controller.findAll()).toEqual(arr);
+            const paginationResult = {
+                data: arr,
+                page: 1,
+                limit: 10,
+                totalCount: 1,
+            };
+            mockService.findAll.mockResolvedValue(paginationResult);
+            expect(await controller.findAll({ page: 1, limit: 10 })).toEqual(paginationResult);
         });
     });
 

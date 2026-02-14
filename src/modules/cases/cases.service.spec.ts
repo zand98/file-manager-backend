@@ -16,6 +16,7 @@ describe('CasesService', () => {
       create: jest.fn(),
       save: jest.fn(),
       find: jest.fn(),
+      findAndCount: jest.fn(),
       findOne: jest.fn(),
     };
 
@@ -54,18 +55,39 @@ describe('CasesService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of cases with relations', async () => {
+    it('should return paginated cases with default sorting', async () => {
       const cases = [{ id: 1, name: 'Case 1', collections: [] }];
-      mockRepository.find.mockResolvedValue(cases);
+      mockRepository.findAndCount.mockResolvedValue([cases, 1]);
 
-      const result = await service.findAll();
+      const query = { page: 1, limit: 10 };
+      const result = await service.findAll(query);
 
-      expect(mockRepository.find).toHaveBeenCalledWith({
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+        where: {},
         relations: ['collections', 'collections.files'],
         order: { updated_at: 'DESC' },
+        skip: 0,
+        take: 10,
       });
-      expect(result).toEqual(cases);
+      expect(result).toEqual({ data: cases, page: 1, limit: 10, totalCount: 1 });
     });
+
+    it('should return paginated cases with custom sorting', async () => {
+        const cases = [{ id: 1, name: 'Case 1', collections: [] }];
+        mockRepository.findAndCount.mockResolvedValue([cases, 1]);
+  
+        const query = { page: 1, limit: 10, sortBy: 'name', orderBy: 'ASC' as const };
+        const result = await service.findAll(query);
+  
+        expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+          where: {},
+          relations: ['collections', 'collections.files'],
+          order: { name: 'ASC' },
+          skip: 0,
+          take: 10,
+        });
+        expect(result).toEqual({ data: cases, page: 1, limit: 10, totalCount: 1 });
+      });
   });
 
   describe('findOne', () => {
