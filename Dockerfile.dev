@@ -1,0 +1,24 @@
+# Development Dockerfile
+FROM node:18-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package files first
+COPY package*.json ./
+
+# Install ALL dependencies (including devDependencies needed for ts-node)
+RUN npm install
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Copy source code (this comes after npm install to preserve node_modules)
+COPY . .
+
+# Expose the application port
+EXPOSE 3000
+
+# Use entrypoint to run seed and start
+ENTRYPOINT ["/docker-entrypoint.sh"]

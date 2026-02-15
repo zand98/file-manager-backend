@@ -2,6 +2,10 @@
 
 A production-ready file management system built with NestJS, featuring resumable uploads/downloads, role-based access control, and Redis-backed OTP authentication.
 
+**Related Repositories:**
+- 🔗 **Frontend**: [file-manager-frontend](https://github.com/zand98/file-manager-frontend)
+- 🔗 **Backend** (this repo): [file-manager-backend](https://github.com/zand98/file-manager-backend)
+
 ---
 
 ## 📋 Project Overview
@@ -40,7 +44,80 @@ The application follows a **three-tier architecture**:
 - Docker & Docker Compose installed
 - Git
 
-### Running with Docker Compose
+### Option 1: Quick Start with Docker Compose (Recommended)
+
+This is the easiest way to get started. Docker Compose will automatically:
+- Start all required services (MySQL, Redis, MinIO)
+- Seed the database with initial roles and admin user
+- Start the application in development mode
+
+**Steps:**
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/zand98/file-manager-backend.git
+   cd file-manager-backend
+   ```
+
+2. **Create environment file** (optional - defaults are already configured)
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Start everything with one command**
+   ```bash
+   docker compose up -d
+   ```
+
+   This will:
+   - ✅ Start **MySQL** database on port `3306`
+   - ✅ Start **MinIO** object storage on ports `9000` (API) and `9001` (Console)
+   - ✅ Start **Redis** on port `6379`
+   - ✅ Start **Redis Commander** (GUI) on port `8081`
+   - ✅ **Automatically seed the database** with roles (`admin`, `user`) and an admin user
+   - ✅ **Start the application** in development mode on port `3000`
+
+4. **Wait for services to be ready** (~20 seconds)
+   
+   You can check the logs:
+   ```bash
+   docker compose logs -f app
+   ```
+
+5. **Access the application**
+   - **API**: http://localhost:3000
+   - **Swagger Documentation**: http://localhost:3000/api
+   - **MinIO Console**: http://localhost:9001 (credentials: `minioadmin` / `minioadmin`)
+   - **Redis Commander**: http://localhost:8081
+
+6. **Login with the default admin account**
+   
+   Use the `/api/auth/login` endpoint or Swagger UI:
+   
+   ```json
+   {
+     "phoneNumber": "07700000000",
+     "password": "Secure_Pass123"
+   }
+   ```
+   
+   After successful login, authentication tokens are automatically stored in HTTP-only cookies.
+
+**To stop all services:**
+```bash
+docker compose down
+```
+
+**To stop and remove all data (fresh start):**
+```bash
+docker compose down -v
+```
+
+---
+
+### Option 2: Manual Setup (Local Development)
+
+If you prefer to run the application locally outside Docker (for debugging or IDE integration), follow these steps:
 
 1. **Clone the repository**
    ```bash
@@ -53,7 +130,7 @@ The application follows a **three-tier architecture**:
    cp .env.example .env
    ```
 
-3. **Configure environment variables** (`.env`)
+3. **Configure environment variables for local setup** (`.env`)
    ```env
    # Application
    APP_ENV=dev
@@ -62,21 +139,21 @@ The application follows a **three-tier architecture**:
 
    # Database (MySQL)
    DB_TYPE=mysql
-   DB_USERNAME=file_manager
-   DB_PASSWORD=file_manager
-   DB_HOST=db
+   DB_USERNAME=fileexplorer
+   DB_PASSWORD=fileexplorer
+   DB_HOST=localhost
    DB_PORT=3306
-   DB_DATABASE=file_manager
+   DB_DATABASE=fileexplorer
 
    # MinIO (S3-compatible storage)
-   MINIO_ENDPOINT=minio
+   MINIO_ENDPOINT=localhost
    MINIO_PORT=9000
    MINIO_ACCESS_KEY=minioadmin
    MINIO_SECRET_KEY=minioadmin
-   MINIO_BUCKET_NAME=file-manager
+   MINIO_BUCKET_NAME=file-explorer
 
    # Redis
-   REDIS_HOST=redis
+   REDIS_HOST=127.0.0.1
    REDIS_PORT=6379
 
    # Authentication Tokens
@@ -89,57 +166,39 @@ The application follows a **three-tier architecture**:
    OTP_DISABLE=true
    ```
 
-4. **Start all services**
+4. **Start only the infrastructure services**
+   
+   Edit `docker-compose.yml` and comment out the `app:` service, or use:
    ```bash
-   docker compose up -d
+   docker compose up -d db redis minio redis-commander
    ```
 
-   This will start:
-   - **MySQL** database on port `3306`
-   - **MinIO** object storage on ports `9000` (API) and `9001` (Console)
-   - **Redis** on port `6379`
-   - **Redis Commander** (GUI) on port `8081`
-
-5. **Run the application locally** (outside Docker)
+5. **Install dependencies**
    ```bash
    npm install
-   npm run start:dev
    ```
 
-   The API will be available at: `http://localhost:3000`
-
-6. **Seed the database with initial data**
-   
-   Before using the system, you must create an admin user. Without a configured user, you won't have permission to access the system.
-   
+6. **Seed the database**
    ```bash
    npm run seed
    ```
    
-   This will create:
-   - **Roles**: `admin` and `user`
-   - **Admin User**:
-     - Phone: `07700000000`
-     - Password: `Secure_Pass123`
-     - Role: `admin`
-   
-   **How to login with the admin account:**
-   
-   Use the `/api/auth/login` endpoint with the credentials above:
-   
-   ```json
-   {
-     "phoneNumber": "07700000000",
-     "password": "Secure_Pass123"
-   }
-   ```
-   
-   After successful login, authentication tokens will be stored in HTTP-only cookies automatically.
+   This creates roles (`admin`, `user`) and an admin user:
+   - Phone: `07700000000`
+   - Password: `Secure_Pass123`
+   - Role: `admin`
 
-7. **Access services**
+7. **Start the application locally**
+   ```bash
+   npm run start:dev
+   ```
+
+8. **Access services**
+   - **API**: http://localhost:3000
    - **API Documentation (Swagger)**: http://localhost:3000/api
-   - **MinIO Console**: http://localhost:9001 (credentials: `minioadmin` / `minioadmin`)
+   - **MinIO Console**: http://localhost:9001
    - **Redis Commander**: http://localhost:8081
+
 ---
 
 ## 🧪 Testing Instructions
@@ -901,17 +960,13 @@ file-manager-backend/
 ├── package.json                     # Dependencies
 ├── tsconfig.json                    # TypeScript config
 ├── jest.config.json                 # Test config
-├── README.md                        # This file
-├── TESTING.md                       # Detailed test documentation
-└── AUTH_REDIS_GUIDE.md              # Authentication system guide
+└── README.md                        # This file
 ```
 
 ---
 
 ## 🔗 Additional Resources
 
-- **Authentication Guide**: [`AUTH_REDIS_GUIDE.md`](./AUTH_REDIS_GUIDE.md)
-- **Testing Documentation**: [`TESTING.md`](./TESTING.md)
 - **Swagger API Docs**: http://localhost:3000/api (when running)
 - **MinIO Console**: http://localhost:9001
 - **Redis Commander**: http://localhost:8081
@@ -927,4 +982,4 @@ Email: zandyasin98@gmail.com
 
 ## 📄 License
 
-UNLICENSED - Private project
+MIT License - This is a public open-source project

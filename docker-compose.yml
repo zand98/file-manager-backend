@@ -63,6 +63,51 @@ services:
     networks:
       - app-network
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: file_manager_app
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      PORT: ${PORT:-3000}
+      APP_NAME: ${APP_NAME:-filemanager}
+      DB_TYPE: ${DB_TYPE:-mysql}
+      DB_USERNAME: ${DB_USERNAME:-fileexplorer}
+      DB_PASSWORD: ${DB_PASSWORD:-fileexplorer}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-fileexplorer}
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-file-explorer}
+      PRESIGNED_URL_EXPIRATION: ${PRESIGNED_URL_EXPIRATION:-3600}
+      ACCESS_TOKEN_SECRET_KEY: ${ACCESS_TOKEN_SECRET_KEY:-access_secret_123}
+      ACCESS_TOKEN_EXPIRATION_TIME: ${ACCESS_TOKEN_EXPIRATION_TIME:-15m}
+      REFRESH_TOKEN_SECRET_KEY: ${REFRESH_TOKEN_SECRET_KEY:-refresh_secret_123}
+      REFRESH_TOKEN_EXPIRATION_TIME: ${REFRESH_TOKEN_EXPIRATION_TIME:-7d}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      OTP_DISABLE: ${OTP_DISABLE:-true}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - app-network
+
   test:
     build:
       context: .

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "author": "Zand Yassin <zandyasin98@gmail.com>",
   "description": "Backend for Filemanager project",
-  "private": true,
-  "license": "UNLICENSED",
+  "private": false,
+  "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
