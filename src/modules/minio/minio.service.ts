@@ -17,10 +17,12 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 export class MinioService {
   private s3Client: S3Client;
   private bucketName: string;
+  private presignedUrlExpiration: number;
   private readonly logger = new Logger(MinioService.name);
 
   constructor(private readonly configService: ConfigService) {
     this.bucketName = this.configService.get('MINIO_BUCKET_NAME') || 'file-explorer';
+    this.presignedUrlExpiration = parseInt(this.configService.get('PRESIGNED_URL_EXPIRATION')) || 3600;
 
     const endPoint = this.configService.get('MINIO_ENDPOINT') || 'localhost';
     const port = parseInt(this.configService.get('MINIO_PORT')) || 9000;
@@ -73,8 +75,7 @@ export class MinioService {
       UploadId: uploadId,
       PartNumber: partNumber,
     });
-    // Expires in 1 hour
-    return getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+    return getSignedUrl(this.s3Client, command, { expiresIn: this.presignedUrlExpiration });
   }
 
   async completeMultipartUpload(key: string, uploadId: string, parts: { ETag: string; PartNumber: number }[]) {
@@ -103,7 +104,7 @@ export class MinioService {
       Bucket: this.bucketName,
       Key: key,
     });
-    return getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+    return getSignedUrl(this.s3Client, command, { expiresIn: this.presignedUrlExpiration });
   }
 
   async delete(key: string) {

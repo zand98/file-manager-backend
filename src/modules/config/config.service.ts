@@ -48,6 +48,7 @@ export class ConfigService {
       MINIO_ACCESS_KEY: joi.string().optional(),
       MINIO_SECRET_KEY: joi.string().optional(),
       MINIO_BUCKET_NAME: joi.string().optional().default('file-explorer'),
+      PRESIGNED_URL_EXPIRATION: joi.number().optional().default(3600),
       // Auth/Redis variables
       ACCESS_TOKEN_SECRET_KEY: joi.string().required(),
       ACCESS_TOKEN_EXPIRATION_TIME: joi.string().default('15m'),

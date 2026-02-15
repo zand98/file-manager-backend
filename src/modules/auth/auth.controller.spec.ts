@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { ConfigService } from '../config/config.service';
 import { Response } from 'express';
 import { LoginPayload } from './PayloadAuth/login.payload';
 import { RegisterPayload } from './PayloadAuth/register.payload';
@@ -19,6 +20,16 @@ describe('AuthController', () => {
     resetPasswordWithVerification: jest.fn(),
   };
 
+  const mockConfigService = {
+    get: jest.fn((key: string) => {
+      const config = {
+        ACCESS_TOKEN_EXPIRATION_TIME: '15m',
+        REFRESH_TOKEN_EXPIRATION_TIME: '7d',
+      };
+      return config[key] || '';
+    }),
+  };
+
   const mockResponse = {
     cookie: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -32,6 +43,10 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: mockAuthService,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();

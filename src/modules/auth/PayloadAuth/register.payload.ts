@@ -12,14 +12,6 @@ import {
 import { RolesExistValidator } from 'src/modules/validators/roles-exist.validator';
 
 export class RegisterPayload {
-  @ApiProperty()
-  id: number;
-
-  @ApiProperty({ required: false, default: false })
-  @IsOptional()
-  @IsBoolean()
-  disabled: boolean;
-
   @ApiProperty({ example: ['manager', 'user'], type: [String] })
   @IsArray()
   @IsNotEmpty()

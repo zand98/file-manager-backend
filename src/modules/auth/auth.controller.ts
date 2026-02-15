@@ -19,14 +19,26 @@ import { SendOtpDto } from './PayloadAuth/send-otp.dto';
 import { VerifyOtpDto } from './PayloadAuth/verify-otp.dto';
 import { ForgetPasswordDto } from './PayloadAuth/forget-password.dto';
 import { RefreshTokenDto } from './PayloadAuth/refresh-token.dto';
+import { ConfigService } from '../config/config.service';
 
 @ApiTags('auth')
 @Controller('api/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
     const isProduction = process.env.APP_ENV === 'prod';
+
+    // Parse token expiration times from config
+    const accessTokenExpiration = this.parseExpirationToMs(
+      this.configService.get('ACCESS_TOKEN_EXPIRATION_TIME') || '15m'
+    );
+    const refreshTokenExpiration = this.parseExpirationToMs(
+      this.configService.get('REFRESH_TOKEN_EXPIRATION_TIME') || '7d'
+    );
 
     // Access Token: Standard path, httpOnly, shorter life
     res.cookie('accessToken', accessToken, {
@@ -34,7 +46,7 @@ export class AuthController {
       secure: isProduction,
       sameSite: 'lax',
       path: '/',
-      maxAge: 15 * 60 * 1000, // 15m
+      maxAge: accessTokenExpiration,
     });
 
     // Refresh Token: Auth path only, httpOnly, longer life
@@ -43,8 +55,30 @@ export class AuthController {
       secure: isProduction,
       sameSite: 'lax',
       path: '/api/auth/refresh-token',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7d
+      maxAge: refreshTokenExpiration,
     });
+  }
+
+  /**
+   * Parse JWT expiration time string (e.g., '15m', '7d') to milliseconds
+   */
+  private parseExpirationToMs(expiration: string): number {
+    const unit = expiration.slice(-1);
+    const value = parseInt(expiration.slice(0, -1));
+
+    switch (unit) {
+      case 's': // seconds
+        return value * 1000;
+      case 'm': // minutes
+        return value * 60 * 1000;
+      case 'h': // hours
+        return value * 60 * 60 * 1000;
+      case 'd': // days
+        return value * 24 * 60 * 60 * 1000;
+      default:
+        // If no unit or unknown, assume milliseconds
+        return parseInt(expiration);
+    }
   }
 
   @Post('login')

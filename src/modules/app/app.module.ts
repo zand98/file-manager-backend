@@ -13,6 +13,7 @@ import { FilesModule } from '../files/files.module';
 import { MinioModule } from '../minio/minio.module';
 import { SharedModule } from '../../shared/shared.module';
 import { RedisModule } from '../redis/redis.module';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
@@ -26,10 +27,6 @@ import { RedisModule } from '../redis/redis.module';
       useFactory: (configService: ConfigService) => {
         return {
           type: configService.get('DB_TYPE'),
-          WEBTOKEN_SECRET_KEY: 'secret',
-          WEBTOKEN_EXPIRATION_TIME: configService.get(
-            'WEBTOKEN_EXPIRATION_TIME',
-          ),
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
           username: configService.get('DB_USERNAME'),
@@ -50,6 +47,7 @@ import { RedisModule } from '../redis/redis.module';
     MinioModule,
     SharedModule,
     RedisModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

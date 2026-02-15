@@ -85,7 +85,6 @@ export class AuthService {
       ...payload,
       password: hashedPassword,
       roles: roles,
-      disabled: payload.disabled || false,
     };
 
     await this.redisService.saveData(payload.phoneNumber, {
