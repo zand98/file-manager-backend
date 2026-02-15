@@ -14,18 +14,19 @@ export class JwtUserStrategy extends PassportStrategy(Strategy) {
     private readonly employeeService: UserService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: any) => {
+          return request?.cookies?.accessToken;
+        },
+      ]),
       ignoreExpiration: false,
       // secretOrKey: 'secret',
-      secretOrKey: configService.get('WEBTOKEN_SECRET_KEY'),
+      secretOrKey: configService.get('ACCESS_TOKEN_SECRET_KEY'),
     });
+
   }
 
-  /**
-   * Checks if the bearer token is a valid token
-   * @param {any} jwtPayload validation method for jwt token
-   * @returns {Promise<object>} a object to be signed
-   */
+
 
   // jwt.strategy.ts
   async validate(payload: { sub: string; roles: string[] }) {

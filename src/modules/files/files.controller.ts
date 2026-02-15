@@ -1,12 +1,27 @@
-import { Controller, Post, Get, Delete, Body, Param, Query, ParseIntPipe, ParseUUIDPipe, BadRequestException } from '@nestjs/common';
+import { 
+  Controller, 
+  Post, 
+  Get, 
+  Delete, 
+  Body, 
+  Param, 
+  Query, 
+  ParseIntPipe, 
+  ParseUUIDPipe, 
+  BadRequestException, 
+  UseGuards 
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { FilesService } from './files.service';
-import { CollectionsService } from 'src/modules/collections/collections.service';
-import { InitUploadDto } from './dtos/init-upload.dto';
+import { CollectionsService } from '../collections/collections.service';
 import { CompleteUploadDto } from './dtos/complete-upload.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Files')
 @Controller()
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,
@@ -14,6 +29,7 @@ export class FilesController {
   ) {}
 
   @Post('cases/:caseId/uploads/init')
+  @Roles('admin') 
   @ApiOperation({ summary: 'Initiate file uploads for a case collection' })
   async initUpload(
     @Param('caseId', ParseIntPipe) caseId: number,
@@ -32,11 +48,7 @@ export class FilesController {
       if (!collection) {
         throw new BadRequestException(`Collection ${body.collectionId} not found`);
       }
-      // Ideally we should check if collection.case.id === caseId, but assuming findOne handles or we allow cross-link for now (service logic)
     } else {
-      // Requirement: If a collection name is not provided, use current datetime.
-      // We create a new collection for this case.
-      // CollectionsService.create uses new Date().toLocaleString() if name is not provided.
       try {
         collection = await this.collectionsService.create(caseId);
       } catch (e) {
@@ -49,6 +61,7 @@ export class FilesController {
   }
 
   @Get('files/:fileId/part-url')
+  @Roles('admin') // Download/Upload privilege restricted to admin
   @ApiOperation({ summary: 'Get presigned URL for a specific part' })
   async getPartUrl(
     @Param('fileId', ParseUUIDPipe) fileId: string,
@@ -57,9 +70,8 @@ export class FilesController {
     return this.filesService.getPresignedPartUrl(fileId, partNumber);
   }
 
-  
-
   @Post('files/:fileId/complete')
+  @Roles('admin') // Download/Upload privilege restricted to admin
   @ApiOperation({ summary: 'Complete a multipart upload' })
   async completeUpload(
     @Param('fileId', ParseUUIDPipe) fileId: string,
@@ -69,11 +81,29 @@ export class FilesController {
   }
 
   @Get('files/:fileId/download')
+  @Roles('admin') // Download privilege restricted to admin
   @ApiOperation({ summary: 'Get download URL for a file' })
   async download(@Param('fileId', ParseUUIDPipe) fileId: string) {
     return this.filesService.getDownloadUrl(fileId);
   }
+
+  @Get('files')
+  @Roles('admin', 'user') // User can read/list
+  @ApiOperation({ summary: 'List all files' })
+  @ApiResponse({ status: 200, description: 'Files retrieved successfully' })
+  findAll() {
+    return this.filesService.findAll();
+  }
+
+  @Get('files/:id')
+  @Roles('admin', 'user') // User can read/view details
+  @ApiOperation({ summary: 'Get a file by id' })
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.filesService.findOne(id);
+  }
+
   @Delete('files/:fileId')
+  @Roles('admin') // Delete restricted to admin
   @ApiOperation({ summary: 'Delete a file' })
   async delete(@Param('fileId', ParseUUIDPipe) fileId: string) {
     return this.filesService.delete(fileId);

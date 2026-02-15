@@ -32,8 +32,8 @@ export class ConfigService {
       APP_URL: joi.string().uri({
         scheme: [/https?/],
       }),
-      WEBTOKEN_SECRET_KEY: joi.string().required(),
-      WEBTOKEN_EXPIRATION_TIME: joi.number().default(1800),
+      WEBTOKEN_SECRET_KEY: joi.string().optional(),
+      WEBTOKEN_EXPIRATION_TIME: joi.number().optional().default(1800),
       PORT: joi.string().required(),
       APP_NAME: joi.string().required(),
       DB_TYPE: joi.string().default('mysql'),
@@ -48,15 +48,16 @@ export class ConfigService {
       MINIO_ACCESS_KEY: joi.string().optional(),
       MINIO_SECRET_KEY: joi.string().optional(),
       MINIO_BUCKET_NAME: joi.string().optional().default('file-explorer'),
-      // New Auth/Redis variables
-      ACCESS_TOKEN_SECRET_KEY: joi.string().optional(), // Make optional or required based on strictness
-      ACCESS_TOKEN_EXPIRATION_TIME: joi.string().optional().default('15m'),
-      REFRESH_TOKEN_SECRET_KEY: joi.string().optional(),
-      REFRESH_TOKEN_EXPIRATION_TIME: joi.string().optional().default('7d'),
+      // Auth/Redis variables
+      ACCESS_TOKEN_SECRET_KEY: joi.string().required(),
+      ACCESS_TOKEN_EXPIRATION_TIME: joi.string().default('15m'),
+      REFRESH_TOKEN_SECRET_KEY: joi.string().required(),
+      REFRESH_TOKEN_EXPIRATION_TIME: joi.string().default('7d'),
       REDIS_HOST: joi.string().default('127.0.0.1'),
       REDIS_PORT: joi.number().default(6379),
       OTP_DISABLE: joi.string().valid('true', 'false').default('false'),
     });
+
 
     /**
      * Represents the status of validation check on the configuration file
@@ -69,16 +70,6 @@ export class ConfigService {
     return validatedEnvConfig;
   }
 
-  /**
-   * Fetches the key from the configuration file
-   * @param {string} key
-   * @returns {string} the associated value for a given key
-   */
-  /**
-   * Fetches the key from the configuration file
-   * @param {string} key
-   * @returns {string} the associated value for a given key
-   */
   get(key: string): string {
     return process.env[key] || this.envConfig[key];
   }

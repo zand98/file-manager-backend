@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './modules/app/app.module';
+
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet, * as headers from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
@@ -35,13 +37,19 @@ async function bootstrap() {
     origin: [
       // set authorized origins here
       'http://localhost',
+      'http://localhost:3000',
       'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:5173'
     ],
   };
   app.enableCors(corsOptions);
 
+  app.use(cookieParser());
+
   app.use(
     helmet({
+
       crossOriginEmbedderPolicy: false,
       contentSecurityPolicy: false,
     }),

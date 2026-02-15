@@ -14,6 +14,22 @@ export class FilesService {
     private readonly minioService: MinioService,
   ) {}
 
+  async findAll(): Promise<FileEntity[]> {
+    return this.fileRepository.find({
+      order: {
+        created_at: 'DESC',
+      },
+    });
+  }
+
+  async findOne(id: number | string): Promise<FileEntity> {
+    const file = await this.fileRepository.findOne({ where: { id: String(id) } as any });
+    if (!file) {
+      throw new NotFoundException(`File with ID ${id} not found`);
+    }
+    return file;
+  }
+
   async initUpload(collectionId: number, filesData: { originalName: string; size: number; mimeType: string }[]) {
     const results = [];
 

@@ -47,6 +47,15 @@ export class CollectionsService {
     return col;
   }
 
+  async findAll(): Promise<CollectionEntity[]> {
+    return this.collectionRepository.find({
+      relations: ['files'],
+      order: {
+        updated_at: 'DESC',
+      },
+    });
+  }
+
   async findAllByCase(
     caseId: number,
     paginationPayload: PaginationPayload,

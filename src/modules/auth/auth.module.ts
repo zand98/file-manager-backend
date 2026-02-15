@@ -21,13 +21,14 @@ import { SharedModule } from '../../shared/shared.module';
     JwtModule.registerAsync({
       imports: [ConfigModule], // Import ConfigModule
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('WEBTOKEN_SECRET_KEY'),
+        secret: configService.get('ACCESS_TOKEN_SECRET_KEY'),
         signOptions: {
-          expiresIn: configService.get('WEBTOKEN_EXPIRATION_TIME') || '3600s',
+          expiresIn: configService.get('ACCESS_TOKEN_EXPIRATION_TIME') || '15m',
         },
       }),
       inject: [ConfigService], // Inject ConfigService
     }),
+
 
     ConfigModule,
     UserModule,

@@ -48,6 +48,7 @@ export class AuthService {
    */
   async validateUser(phoneNumber: string, password: string): Promise<User> {
     const user = await this.userService.getByPhoneNumber(phoneNumber);
+    
     if (!user) {
       console.log(`[AuthService] User not found for phone: ${phoneNumber}`);
       throw new UnauthorizedException('Invalid credentials');
@@ -75,17 +76,6 @@ export class AuthService {
     const existingUser = await this.userService.getByPhoneNumber(payload.phoneNumber);
     if (existingUser) throw new ConflictException('Phone number already registered');
 
-    // Prepare data (hash password for eventual storage, but maybe store plain in Redis? 
-    // Actually, create() in UserService usually takes plain password if it hashes it?
-    // Let's check UserService.create().
-    // Step 0 shows: UserService.create() takes { ... phoneNumber, password, ... }
-    // It calls `userRepository.create(userData)`. It DOES NOT hash password in create().
-    // It relies on caller to hash it? 
-    // Step 0 check: `user.password = await bcrypt.hash(newPassword, this.saltRounds)` is in `updateUserPassword`.
-    // BUT `create` method: `const newUser = this.userRepository.create(userData); await this.userRepository.save(newUser);`.
-    // It does NOT hash. 
-    // So `registerUser` MUST hash the password before calling `userService.create`.
-    
     const hashedPassword = await bcrypt.hash(payload.password, this.SALT_ROUNDS);
     
     const roles = await this.roleService.findByNames(payload.roles && payload.roles.length ? payload.roles : ['user']);
@@ -97,26 +87,6 @@ export class AuthService {
       roles: roles,
       disabled: payload.disabled || false,
     };
-
-    const redisRecord = await this.redisService.getData<any>(payload.phoneNumber);
-
-    if (redisRecord && redisRecord.action === RedisActions.REGISTER && redisRecord.isOtpVerified) {
-      // Create user
-      const createdUser = await this.userService.create(newUserData);
-      const tokens = await this.generateTokens(createdUser);
-
-      await this.redisService.delKey(payload.phoneNumber);
-
-      const user = await this.userService.getById(createdUser.id, ['roles']);
-      delete user.password;
-      delete user.refreshToken;
-
-      return {
-        user,
-        otpResponse: OtpResponseCodes.USER_REGISTERED,
-        ...tokens,
-      };
-    }
 
     await this.redisService.saveData(payload.phoneNumber, {
       action: RedisActions.REGISTER,
@@ -176,11 +146,28 @@ export class AuthService {
     await this.redisService.updateField(phoneNumber, 'isOtpVerified', true);
 
     if (tempData.action === RedisActions.REGISTER) {
-      return this.registerUser(tempData.userData);
+      return this.finalizeRegistration(tempData.userData, phoneNumber);
     } else if (tempData.action === RedisActions.FORGET_PASSWORD) {
       return this.finalizeForgetPassword(tempData.userData);
     }
     throw new BadRequestException('Unknown action');
+  }
+
+  private async finalizeRegistration(userData: any, phoneNumber: string) {
+    const createdUser = await this.userService.create(userData);
+    const tokens = await this.generateTokens(createdUser);
+
+    await this.redisService.delKey(phoneNumber);
+
+    const user = await this.userService.getById(createdUser.id, ['roles']);
+    delete user.password;
+    delete user.refreshToken;
+
+    return {
+      user,
+      otpResponse: OtpResponseCodes.USER_REGISTERED,
+      ...tokens,
+    };
   }
 
   /**
