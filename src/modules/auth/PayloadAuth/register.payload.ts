@@ -51,6 +51,4 @@ export class RegisterPayload {
   })
   password: string;
 
-  @ApiProperty({})
-  created_at: Date;
 }

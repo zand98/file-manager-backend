@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -22,12 +23,16 @@ import { PaginationPayload } from '../app/pagination.payload';
 import { PaginationResult } from '../app/paginationResult.interface';
 import { PatchUserPayload } from './dtos/patch.user.payload';
 import { VALID_USER_FIELDS, ORDER_BY } from '../../shared/constants';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 /**
  * User Controller
  */
 @ApiBearerAuth()
 @ApiTags('User')
 @Controller('api/user')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   private i: number;
 
@@ -36,6 +41,7 @@ export class UserController {
   }
 
   @Get('')
+  @Roles('admin', 'user')
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   @ApiResponse({ status: 400, description: 'Fetch Users Request Failed' })
   @ApiQuery({
@@ -76,6 +82,7 @@ export class UserController {
    */
 
   @Get(':userToken')
+  @Roles('admin')
   @ApiResponse({
     status: 200,
     type: User,
@@ -96,6 +103,7 @@ export class UserController {
   }
 
   @Patch('token/:userToken')
+  @Roles('admin')
   @ApiResponse({ status: 200, description: 'Patch User Request Received' })
   @ApiResponse({ status: 400, description: 'Patch User Request Failed' })
   @ApiParam({ name: 'userToken', required: true })
@@ -107,6 +115,7 @@ export class UserController {
   }
 
   @Patch('phoneNumber/:phoneNumber')
+  @Roles('admin')
   @ApiParam({ name: 'phoneNumber', required: true })
   async patchUserByphoneNumber(
     @Body() payload: PatchUserPayload,
@@ -121,6 +130,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @Roles('admin')
   @ApiResponse({ status: 200, description: 'Delete User Request Received' })
   @ApiResponse({ status: 400, description: 'Delete User Request Failed' })
   async delete(@Param('id') id: number): Promise<{ message: string }> {

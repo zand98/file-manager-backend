@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
@@ -17,10 +18,15 @@ import { PatchRolePayload } from './dtos/patchRole.dto';
 import { VALID_ROLE_FIELDS, ORDER_BY } from '../../shared/constants';
 import { PaginationPayload } from '../app/pagination.payload';
 import { PaginationResult } from '../app/paginationResult.interface';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiBearerAuth()
 @ApiTags('roles')
 @Controller('api/roles')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
