@@ -16,7 +16,7 @@ export class CollectionsController {
   constructor(private readonly collectionsService: CollectionsService) {}
 
   @Post()
-  @Roles('admin', 'user')
+  @Roles('admin')
   @ApiOperation({ summary: 'Create a new collection in a case' })
   @ApiResponse({ status: 201, description: 'The collection has been successfully created.' })
   async create(
@@ -73,7 +73,7 @@ export class CollectionsController {
   }
 
   @Delete(':collectionId')
-  @Roles('admin', 'user')
+  @Roles('admin')
   @ApiOperation({ summary: 'Delete a collection' })
   async delete(@Param('collectionId', ParseIntPipe) collectionId: number) {
     return this.collectionsService.delete(collectionId);
