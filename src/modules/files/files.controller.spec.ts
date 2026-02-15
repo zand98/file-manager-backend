@@ -16,6 +16,9 @@ describe('FilesController', () => {
             getPresignedPartUrl: jest.fn(),
             completeUpload: jest.fn(),
             getDownloadUrl: jest.fn(),
+            findAll: jest.fn(),
+            findOne: jest.fn(),
+            delete: jest.fn(),
         };
 
         collectionsService = {
@@ -107,6 +110,30 @@ describe('FilesController', () => {
             filesService.getDownloadUrl.mockResolvedValue({ url: 'durl' });
             await controller.download('uuid-123');
             expect(filesService.getDownloadUrl).toHaveBeenCalledWith('uuid-123');
+        });
+    });
+
+    describe('findAll', () => {
+        it('should return array of files', async () => {
+            const files = [{ id: '1' }, { id: '2' }];
+            filesService.findAll.mockResolvedValue(files);
+            expect(await controller.findAll()).toEqual(files);
+        });
+    });
+
+    describe('findOne', () => {
+        it('should return a file', async () => {
+            const file = { id: '1' };
+            filesService.findOne.mockResolvedValue(file);
+            expect(await controller.findOne('1')).toEqual(file);
+        });
+    });
+
+    describe('delete', () => {
+        it('should delete a file', async () => {
+            filesService.delete.mockResolvedValue({ deleted: true });
+            expect(await controller.delete('1')).toEqual({ deleted: true });
+            expect(filesService.delete).toHaveBeenCalledWith('1');
         });
     });
 });

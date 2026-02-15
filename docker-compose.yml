@@ -63,6 +63,16 @@ services:
     networks:
       - app-network
 
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: file_manager_test
+    depends_on:
+      - db
+    networks:
+      - app-network
+
 volumes:
   db_data:
   minio_data:
